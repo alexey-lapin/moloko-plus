@@ -2,10 +2,11 @@
 import Button from 'primevue/button'
 import { Menubar } from 'primevue'
 import { useSessionStore } from '@/stores/session.ts'
+import type { MenuItem } from 'primevue/menuitem'
 
 const sessionStore = useSessionStore()
 
-const items = []
+const items : MenuItem[] = []
 </script>
 
 <template>
