@@ -35,13 +35,11 @@ const allEvents: Ref<Event[]> = ref([])
 dayjs.extend(duration)
 dayjs.extend(utc)
 
-const isInProgress = ref(false)
+const inProgressEvent: Ref<Event | null> = ref(null)
 
-const inProgessEvent: Ref<Event | undefined> = ref()
+const tags: Ref<[] | null> = ref(null)
 
-const brest: Ref<[] | null> = ref(null)
-
-const options = ref(['Left', 'Right'])
+const options = ref(['Left', 'Right', 'D3'])
 
 const timeSinceLastEvent = ref(0)
 const timeSinceLastEvent2 = ref()
@@ -53,21 +51,27 @@ async function getEvents() {
     .gte('started_at', dayjs().startOf('day').utc().toISOString())
     .order('id', { ascending: true })
 
-  const { data: previosData } = await supabase
+  const { data: previousData } = await supabase
     .from('events')
     .select()
     .lt('started_at', dayjs().startOf('day').utc().toISOString())
     .order('id', { ascending: false })
     .limit(1)
 
-  events.value = todayData ?? []
-  allEvents.value = (previosData ?? []).concat(todayData)
-  console.log(events.value)
-  isInProgress.value =
-    allEvents.value[allEvents.value.length - 1].ended_at === undefined ||
-    allEvents.value[allEvents.value.length - 1].ended_at === null
-  inProgessEvent.value = allEvents.value[allEvents.value.length - 1]
-  brest.value = allEvents.value[allEvents.value.length - 1].properties?.brest as [] ?? null
+  events.value = [...todayData]
+  allEvents.value = previousData.concat(todayData)
+  // isInProgress.value =
+  //   allEvents.value[allEvents.value.length - 1].ended_at === undefined ||
+  //   allEvents.value[allEvents.value.length - 1].ended_at === null
+  const lastEvent = allEvents.value[allEvents.value.length - 1]
+
+  if (lastEvent.ended_at) {
+    inProgressEvent.value = null
+  } else {
+    inProgressEvent.value = lastEvent
+  }
+
+  tags.value = (allEvents.value[allEvents.value.length - 1].properties?.brest as []) ?? null
 
   timeSinceLastEvent.value = minutesFromLastEvent()
   timeSinceLastEvent2.value = m(timeSinceLastEvent.value)
@@ -83,6 +87,12 @@ function startEvent(type: string) {
     .then(() => {
       getEvents()
     })
+}
+
+function updateStartedAt(id: number, started_at: Date) {
+  updateEvent(id, {
+    started_at: started_at.toISOString(),
+  })
 }
 
 function endEvent(id: number, ended_at: Date) {
@@ -144,47 +154,47 @@ onMounted(() => {
   <TheNav />
   <div v-if="allEvents.length > 0">
     <h1 class="mt-4">{{ dayjs(allEvents[0].started_at).format('MMMM DD') }}</h1>
-    <TheEvent :events="allEvents" :index="0" />
+    <TheEvent :event="allEvents[0]" :index="0" />
   </div>
   <h1 class="mt-4">{{ getFormattedDate() }} ({{ events.length }})</h1>
   <div class="mt-4">
     <div v-if="allEvents.length > 0">
-      <TheEvent
-        v-for="index in allEvents.length - 1"
-        :key="index"
-        :events="allEvents"
-        :index="index"
-      />
+      <template v-for="index in allEvents.length">
+        <TheEvent
+          v-if="index > 1"
+          :key="allEvents[index - 1].id"
+          :index="index - 1"
+          :event="allEvents[index - 1]"
+          :previous-event="allEvents[index - 2]"
+        />
+      </template>
     </div>
-    <div v-if="inProgessEvent" class="mt-4">
+    <div v-if="inProgressEvent" class="mt-4">
       <Card pt:body:class="">
-        <template #title># {{ inProgessEvent.id }} {{ inProgessEvent.name }}</template>
+        <template #title># {{ inProgressEvent.id }} {{ inProgressEvent.name }}</template>
         <template #content>
           <div>
             <p>Started:</p>
-            <div class="flex gap-4">
-              <Button label="-10" severity="secondary"></Button>
-              <Button label="-9" severity="secondary"></Button>
-              <Button label="-8" severity="secondary"></Button>
-              <Button label="-7" severity="secondary"></Button>
-              <Button label="-6" severity="secondary"></Button>
-              <Button label="-5" severity="secondary"></Button>
-              <Button label="-4" severity="secondary"></Button>
-              <Button label="-3" severity="secondary"></Button>
-              <Button label="-2" severity="secondary"></Button>
-              <Button label="-1" severity="secondary"></Button>
+            <div class="flex flex-wrap gap-4">
+              <template v-for="n in Array.from({ length: 10 }, (_, i) => -10 + i)" :key="n">
+                <Button
+                  :label="'' + n"
+                  severity="secondary"
+                  @click="updateStartedAt(inProgressEvent.id, addMinutes(n))"
+                ></Button>
+              </template>
             </div>
           </div>
           <div class="mt-2">
-            <p>Brest:</p>
+            <p>Tags:</p>
             <SelectButton
-              v-model="brest"
+              v-model="tags"
               :options="options"
               multiple
               @change="
-                updateEvent(inProgessEvent.id, {
+                updateEvent(inProgressEvent.id, {
                   properties: {
-                    brest: brest,
+                    brest: tags,
                   },
                 })
               "
@@ -192,58 +202,65 @@ onMounted(() => {
           </div>
           <div class="mt-2">
             <p>Stopped:</p>
-            <div class="flex gap-4">
-              <Button
-                label="-10"
-                severity="secondary"
-                @click="endEvent(inProgessEvent.id, addMinutes(-10))"
-              ></Button>
-              <Button
-                label="-9"
-                severity="secondary"
-                @click="endEvent(inProgessEvent.id, addMinutes(-9))"
-              ></Button>
-              <Button
-                label="-8"
-                severity="secondary"
-                @click="endEvent(inProgessEvent.id, addMinutes(-8))"
-              ></Button>
-              <Button
-                label="-7"
-                severity="secondary"
-                @click="endEvent(inProgessEvent.id, addMinutes(-7))"
-              ></Button>
-              <Button
-                label="-6"
-                severity="secondary"
-                @click="endEvent(inProgessEvent.id, addMinutes(-6))"
-              ></Button>
-              <Button
-                label="-5"
-                severity="secondary"
-                @click="endEvent(inProgessEvent.id, addMinutes(-5))"
-              ></Button>
-              <Button
-                label="-4"
-                severity="secondary"
-                @click="endEvent(inProgessEvent.id, addMinutes(-4))"
-              ></Button>
-              <Button
-                label="-3"
-                severity="secondary"
-                @click="endEvent(inProgessEvent.id, addMinutes(-3))"
-              ></Button>
-              <Button
-                label="-2"
-                severity="secondary"
-                @click="endEvent(inProgessEvent.id, addMinutes(-2))"
-              ></Button>
-              <Button
-                label="-1"
-                severity="secondary"
-                @click="endEvent(inProgessEvent.id, addMinutes(-1))"
-              ></Button>
-              <Button label="Now" @click="endEvent(inProgessEvent.id, addMinutes(0))" />
+            <div class="flex flex-wrap gap-4">
+              <template v-for="n in Array.from({ length: 10 }, (_, i) => -10 + i)" :key="n">
+                <Button
+                  :label="'' + n"
+                  severity="secondary"
+                  @click="endEvent(inProgressEvent.id, addMinutes(n))"
+                ></Button>
+              </template>
+<!--              <Button-->
+<!--                label="-10"-->
+<!--                severity="secondary"-->
+<!--                @click="endEvent(inProgressEvent.id, addMinutes(-10))"-->
+<!--              ></Button>-->
+<!--              <Button-->
+<!--                label="-9"-->
+<!--                severity="secondary"-->
+<!--                @click="endEvent(inProgressEvent.id, addMinutes(-9))"-->
+<!--              ></Button>-->
+<!--              <Button-->
+<!--                label="-8"-->
+<!--                severity="secondary"-->
+<!--                @click="endEvent(inProgressEvent.id, addMinutes(-8))"-->
+<!--              ></Button>-->
+<!--              <Button-->
+<!--                label="-7"-->
+<!--                severity="secondary"-->
+<!--                @click="endEvent(inProgressEvent.id, addMinutes(-7))"-->
+<!--              ></Button>-->
+<!--              <Button-->
+<!--                label="-6"-->
+<!--                severity="secondary"-->
+<!--                @click="endEvent(inProgressEvent.id, addMinutes(-6))"-->
+<!--              ></Button>-->
+<!--              <Button-->
+<!--                label="-5"-->
+<!--                severity="secondary"-->
+<!--                @click="endEvent(inProgressEvent.id, addMinutes(-5))"-->
+<!--              ></Button>-->
+<!--              <Button-->
+<!--                label="-4"-->
+<!--                severity="secondary"-->
+<!--                @click="endEvent(inProgressEvent.id, addMinutes(-4))"-->
+<!--              ></Button>-->
+<!--              <Button-->
+<!--                label="-3"-->
+<!--                severity="secondary"-->
+<!--                @click="endEvent(inProgressEvent.id, addMinutes(-3))"-->
+<!--              ></Button>-->
+<!--              <Button-->
+<!--                label="-2"-->
+<!--                severity="secondary"-->
+<!--                @click="endEvent(inProgressEvent.id, addMinutes(-2))"-->
+<!--              ></Button>-->
+<!--              <Button-->
+<!--                label="-1"-->
+<!--                severity="secondary"-->
+<!--                @click="endEvent(inProgressEvent.id, addMinutes(-1))"-->
+<!--              ></Button>-->
+              <Button label="Now" @click="endEvent(inProgressEvent.id, addMinutes(0))" />
             </div>
           </div>
         </template>

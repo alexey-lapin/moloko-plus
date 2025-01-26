@@ -1,17 +1,27 @@
 <script setup lang="ts">
 import Card from 'primevue/card'
 import Tag from 'primevue/tag'
-import { defineProps } from 'vue'
+import { defineProps, onRenderTracked, onRenderTriggered, toRef } from 'vue'
 import type Event from '@/model/Event.ts'
 import dayjs from 'dayjs'
 
+onRenderTracked((event) => {
+  debugger
+})
+
+onRenderTriggered((event) => {
+  debugger
+})
+
 const props = defineProps<{
   index: number
-  events: Event[]
+  event: Event
+  previousEvent?: Event
 }>()
 
-const event = props.events[props.index]
-const brest = event.properties?.brest as string[] ?? []
+const event = toRef(() => props.event)
+// const brest = (event.value.properties?.brest as string[]) ?? []
+const brest = toRef(() => (event.value.properties?.brest as string[]) ?? [])
 
 const formatDate = (date: string) => dayjs(date).format('HH:mm')
 
@@ -31,21 +41,22 @@ const duration = (minutes: number) => {
     <!--        <template #title># {{ event.id }} {{ event.name }}</template>-->
     <template #subtitle>
       <div class="flex items-center gap-2">
+        <span>#{{ index }}</span>
+        <span v-if="previousEvent">
+          [^{{ duration(getMinutesDifference(previousEvent.started_at, event.started_at)) }}]
+        </span>
         <span v-if="event.ended_at">
           {{ formatDate(event.started_at) }} -
           {{ formatDate(event.ended_at) }}
         </span>
-        <span v-if="index > 0">
-          [{{ duration(getMinutesDifference(events[index - 1].started_at, event.started_at)) }}]
-        </span>
+        <span v-else>{{ formatDate(event.started_at) }} - In progress</span>
         <span v-if="event.ended_at">
-          [{{ getMinutesDifference(event.started_at, event.ended_at) }}]
+          [{{ duration(getMinutesDifference(event.started_at, event.ended_at)) }}]
         </span>
-        <p v-if="!event.ended_at">{{ formatDate(event.started_at) }} - In progress</p>
 
         <div v-if="brest.length > 0" class="flex gap-1">
-          <Tag v-if="brest.includes('Left')" severity="success" value="Left" />
-          <Tag v-if="brest.includes('Right')" severity="info" value="Right" />
+          <Tag v-if="brest.includes('Left')" severity="success" value="L" />
+          <Tag v-if="brest.includes('Right')" severity="info" value="R" />
         </div>
       </div>
     </template>
