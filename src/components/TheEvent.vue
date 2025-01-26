@@ -35,7 +35,7 @@ const duration = (minutes: number, format: string) => {
     <!--        <template #title># {{ event.id }} {{ event.name }}</template>-->
     <template #content>
       <div class="flex items-center">
-        <div class="flex-grow flex items-center gap-2 font-mono1">
+        <div class="flex-grow flex flex-wrap items-center gap-2 font-mono1">
           <span class="font-bold">{{ index }}</span>
 
           <span v-if="event.ended_at">

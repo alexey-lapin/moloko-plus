@@ -227,7 +227,7 @@ onMounted(() => {
               @change="
                 updateEvent(inProgressEvent.id, {
                   properties: {
-                    brest: tags,
+                    ...inProgressEvent.properties, brest: tags,
                   },
                 })
               "
@@ -240,7 +240,7 @@ onMounted(() => {
               @change="
                 updateEvent(inProgressEvent.id, {
                   properties: {
-                    comment: comment,
+                    ...inProgressEvent.properties, comment
                   },
                 })
               "
