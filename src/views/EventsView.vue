@@ -58,8 +58,8 @@ async function getEvents() {
     .order('id', { ascending: false })
     .limit(1)
 
-  events.value = [...todayData]
-  allEvents.value = previousData.concat(todayData)
+  events.value = todayData as Event[] ?? []
+  allEvents.value = (previousData as Event[] ?? []).concat(events.value)
   // isInProgress.value =
   //   allEvents.value[allEvents.value.length - 1].ended_at === undefined ||
   //   allEvents.value[allEvents.value.length - 1].ended_at === null

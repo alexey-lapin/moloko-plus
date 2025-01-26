@@ -57,6 +57,7 @@ const duration = (minutes: number) => {
         <div v-if="brest.length > 0" class="flex gap-1">
           <Tag v-if="brest.includes('Left')" severity="success" value="L" />
           <Tag v-if="brest.includes('Right')" severity="info" value="R" />
+          <Tag v-if="brest.includes('D3')" severity="warn" value="D3" />
         </div>
       </div>
     </template>
