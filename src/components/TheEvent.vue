@@ -1,17 +1,9 @@
 <script setup lang="ts">
 import Card from 'primevue/card'
 import Tag from 'primevue/tag'
-import { defineProps, onRenderTracked, onRenderTriggered, toRef } from 'vue'
+import { defineProps, toRef } from 'vue'
 import type Event from '@/model/Event.ts'
 import dayjs from 'dayjs'
-
-onRenderTracked((event) => {
-  debugger
-})
-
-onRenderTriggered((event) => {
-  debugger
-})
 
 const props = defineProps<{
   index: number
@@ -20,8 +12,7 @@ const props = defineProps<{
 }>()
 
 const event = toRef(() => props.event)
-// const brest = (event.value.properties?.brest as string[]) ?? []
-const brest = toRef(() => (event.value.properties?.brest as string[]) ?? [])
+const tags = toRef(() => (event.value.properties?.brest as string[]) ?? [])
 
 const formatDate = (date: string) => dayjs(date).format('HH:mm')
 
@@ -54,10 +45,10 @@ const duration = (minutes: number) => {
           [{{ duration(getMinutesDifference(event.started_at, event.ended_at)) }}]
         </span>
 
-        <div v-if="brest.length > 0" class="flex gap-1">
-          <Tag v-if="brest.includes('Left')" severity="success" value="L" />
-          <Tag v-if="brest.includes('Right')" severity="info" value="R" />
-          <Tag v-if="brest.includes('D3')" severity="warn" value="D3" />
+        <div v-if="tags.length > 0" class="flex gap-1">
+          <Tag v-if="tags.includes('Left')" severity="success" value="L" />
+          <Tag v-if="tags.includes('Right')" severity="info" value="R" />
+          <Tag v-if="tags.includes('D3')" severity="warn" value="D3" />
         </div>
       </div>
     </template>

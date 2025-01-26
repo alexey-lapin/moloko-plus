@@ -16,7 +16,6 @@ console.log(`event isRef ${isRef(props.event)}`)
 console.log(`event isProxy ${isProxy(props.event)}`)
 console.log(`event id ${props.event.id}`)
 const event = toRef(props, 'event')
-const brest = (event.value.properties?.brest as string[]) ?? []
 </script>
 
 <template>
