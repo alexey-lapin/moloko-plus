@@ -3,6 +3,7 @@ import Button from 'primevue/button'
 import Card from 'primevue/card'
 import SelectButton from 'primevue/selectbutton'
 import DatePicker from 'primevue/datepicker'
+import InputText from 'primevue/inputtext'
 
 import TheNav from '@/components/TheNav.vue'
 import { onMounted, ref, type Ref } from 'vue'
@@ -26,6 +27,7 @@ const startTime: Ref<Date | null> = ref(null)
 const endTime: Ref<Date | null> = ref(null)
 
 const tags: Ref<[] | null> = ref(null)
+const comment: Ref<string | null> = ref(null)
 
 const options = ref(['Left', 'Right', 'D3'])
 
@@ -57,6 +59,8 @@ async function getEvents() {
   }
 
   tags.value = (allEvents.value[allEvents.value.length - 1].properties?.brest as []) ?? null
+  comment.value =
+    (allEvents.value[allEvents.value.length - 1].properties?.comment as string) ?? null
 
   timeSinceLastEvent.value = minutesFromLastEvent()
   timeSinceLastEvent2.value = m(timeSinceLastEvent.value)
@@ -132,11 +136,13 @@ function m(minutes: number): string {
 function selectEvent(index: number) {
   inProgressEvent.value = allEvents.value[index]
   tags.value = (allEvents.value[index].properties?.brest as []) ?? null
+  comment.value = (allEvents.value[index].properties?.comment as string) ?? null
 }
 
 function unselectEvent() {
   inProgressEvent.value = null
   tags.value = null
+  comment.value = null
 }
 
 setInterval(() => {
@@ -183,9 +189,9 @@ onMounted(() => {
     <div v-if="inProgressEvent" class="mt-4">
       <Card pt:body:class="">
         <template #title>
-          <div class="flex">
+          <div class="flex items-center">
             <p class="flex-grow"># {{ inProgressEvent.id }} {{ inProgressEvent.name }}</p>
-            <p @click="unselectEvent">x</p>
+            <span class="pi pi-times" @click="unselectEvent"></span>
           </div>
         </template>
         <template #content>
@@ -197,6 +203,11 @@ onMounted(() => {
                 v-model="startTime"
                 timeOnly
                 @keydown.enter="updateStartedAt(inProgressEvent.id, startTime)"
+              />
+              <Button
+                severity="secondary"
+                label="OK"
+                @click="updateStartedAt(inProgressEvent.id, startTime)"
               />
               <template v-for="n in Array.from({ length: 9 }, (_, i) => -9 + i)" :key="n">
                 <Button
@@ -223,6 +234,19 @@ onMounted(() => {
             />
           </div>
           <div class="mt-2">
+            <p>Comment:</p>
+            <InputText
+              v-model="comment"
+              @change="
+                updateEvent(inProgressEvent.id, {
+                  properties: {
+                    comment: comment,
+                  },
+                })
+              "
+            />
+          </div>
+          <div class="mt-2">
             <p>Stopped:</p>
             <div class="flex flex-wrap gap-4">
               <DatePicker
@@ -230,6 +254,11 @@ onMounted(() => {
                 v-model="endTime"
                 timeOnly
                 @keydown.enter="endEvent(inProgressEvent.id, endTime)"
+              />
+              <Button
+                severity="secondary"
+                label="OK"
+                @click="endEvent(inProgressEvent.id, endTime)"
               />
               <template v-for="n in Array.from({ length: 9 }, (_, i) => -9 + i)" :key="n">
                 <Button

@@ -12,7 +12,7 @@ const items : MenuItem[] = []
 <template>
   <Menubar :model="items">
     <template #start>
-      <h1>Track</h1>
+      <h1 class="text-xl">🍼 Moloko+</h1>
     </template>
 <!--    <template #item="{ item, props, hasSubmenu, root }">-->
 <!--      <a v-ripple class="flex items-center" v-bind="props.action">-->
@@ -26,7 +26,7 @@ const items : MenuItem[] = []
 <!--      <div class="flex items-center gap-2">-->
 <!--        <Avatar image="/images/avatar/amyelsner.png" shape="circle" />-->
 <!--      </div>-->
-      <Button label="Logout" @click="sessionStore.logout()"/>
+      <Button label="Logout" severity="secondary" @click="sessionStore.logout()"/>
     </template>
   </Menubar>
 </template>
