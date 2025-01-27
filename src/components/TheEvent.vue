@@ -7,6 +7,7 @@ import dayjs from 'dayjs'
 
 const props = defineProps<{
   index: number
+  isSelected: boolean
   event: Event
   previousEvent?: Event
 }>()
@@ -31,7 +32,7 @@ const duration = (minutes: number, format: string) => {
 </script>
 
 <template>
-  <Card class="mt-2" pt:body:class="!py-2 !gap-1" pt:content:class="empty:hidden">
+  <Card :class="`mt-2 ${isSelected ? 'border border-teal-600' : ''}`" pt:body:class="!py-2 !gap-1" pt:content:class="empty:hidden">
     <!--        <template #title># {{ event.id }} {{ event.name }}</template>-->
     <template #content>
       <div class="flex items-center">
