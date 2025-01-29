@@ -73,7 +73,7 @@ const duration = (minutes: number, format: string) => {
       <div v-if="isSelected">
         <EventEditor
           :event="event"
-          @event-updated="emits('event-updated', $event)"
+          @event-updated="emits('event-updated', { event: event, unselect: $event })"
         />
       </div>
     </template>

@@ -73,13 +73,14 @@ function startEvent(type: string) {
     })
     .then(() => {
       getEvents()
+      sendMessageToBot({ event: lastEvent.value, start: true })
     })
 }
 
-function onEditorUpdate(unselect: boolean) {
-  console.log('unselect', unselect)
-  if (unselect) {
+function onEditorUpdate(ev: { event: Event, unselect: boolean}) {
+  if (ev.unselect) {
     unselectEvent()
+    sendMessageToBot({ event: ev.event, start: false })
   }
   getEvents()
 }
@@ -130,6 +131,22 @@ function copyEvents(dayIndex: number) {
   }, 3500)
 }
 
+function sendMessageToBot(botMessage: { event: Event | null, start: boolean}) {
+  let message: string
+  if (botMessage.start) {
+    message = `#${botMessage.event?.id} ${botMessage.event?.name} started at ${dayjs(botMessage.event?.started_at).format('HH:mm')}`
+  } else {
+    message = `#${botMessage.event?.id} ${botMessage.event?.name} ended at ${dayjs(botMessage.event?.ended_at).format('HH:mm')}`
+  }
+  supabase.functions
+    .invoke('bot-send', {
+      body: JSON.stringify({ name: message }),
+    })
+    .then((res) => {
+      console.log(res)
+    })
+}
+
 onMounted(() => {
   getEvents()
 })
@@ -175,5 +192,6 @@ onMounted(() => {
   <div class="mt-2 ml-3 mb-3 flex gap-4">
     <Button icon="pi pi-refresh" severity="secondary" @click="getEvents()" />
     <Button label="Brestfeeding" @click="startEvent('brestfeeding')" />
+<!--    <Button label="Bottle" @click="sendMessageToBot({'event': eventsByDate[0][1][0], 'start': false })" />-->
   </div>
 </template>
