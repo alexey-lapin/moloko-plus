@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import Button from 'primevue/button'
 import DatePicker from 'primevue/datepicker'
-import Card from 'primevue/card'
 import SelectButton from 'primevue/selectbutton'
 import InputText from 'primevue/inputtext'
 import { ref, type Ref, toRef, watch } from 'vue'
@@ -13,11 +12,12 @@ const props = defineProps<{
   event: Event
 }>()
 
-const emits = defineEmits(['eventClosed', 'eventUpdated'])
+const emits = defineEmits(['eventUpdated'])
 
 const event = toRef(() => props.event)
 
 const isStartedAtEditable = ref(false)
+const isEndedAtEditable = ref(false)
 
 const startedAt: Ref<Date | null> = ref(new Date(event.value.started_at))
 const endedAt: Ref<Date | null> = ref(event.value.ended_at ? new Date(event.value.ended_at) : null)
@@ -76,94 +76,93 @@ watch(
 </script>
 
 <template>
-  <Card pt:body:class="">
-    <template #title>
-      <div class="flex items-center">
-        <p class="flex-grow"># {{ event.id }} {{ event.name }}</p>
-        <span class="pi pi-times" @click="emits('eventClosed')"></span>
+  <p class="text-lg"># {{ event.id }} {{ event.name }}</p>
+  <div>
+    <p>Edit start:</p>
+    <Button
+      v-if="!isStartedAtEditable"
+      @click="isStartedAtEditable = true"
+      label="Edit start"
+      severity="secondary"
+    ></Button>
+    <div v-else>
+      <div class="flex flex-wrap gap-4">
+        <DatePicker
+          class="w-20"
+          v-model="startedAt"
+          timeOnly
+          @keydown.enter="updateStartedAt(startedAt)"
+        />
+        <Button severity="secondary" label="OK" @click="updateStartedAt(startedAt)" />
+        <template v-for="n in Array.from({ length: 5 }, (_, i) => -5 + i)" :key="n">
+          <Button
+            :label="'' + n"
+            severity="secondary"
+            @click="updateStartedAt(addMinutes(n))"
+          ></Button>
+        </template>
       </div>
-    </template>
-    <template #content>
-      <div>
+    </div>
+  </div>
+
+  <div class="mt-2">
+    <p>Tags:</p>
+    <SelectButton
+      v-model="tags"
+      :options="tagOptions"
+      multiple
+      @change="
+        updateEvent(false, {
+          properties: {
+            ...event.properties,
+            brest: tags,
+          },
+        })
+      "
+    />
+  </div>
+
+  <div class="mt-2">
+    <p>Comment:</p>
+    <InputText
+      v-model="comment"
+      @change="
+        updateEvent(false, {
+          properties: {
+            ...event.properties,
+            comment,
+          },
+        })
+      "
+    />
+  </div>
+
+  <div class="mt-2 mb-2">
+    <p>Edit end:</p>
+    <div class="flex flex-wrap gap-4">
+      <Button
+        v-if="!isEndedAtEditable"
+        @click="isEndedAtEditable = true"
+        label="Edit end"
+        severity="secondary"
+      ></Button>
+      <DatePicker
+        v-if="isEndedAtEditable"
+        class="w-20"
+        v-model="endedAt"
+        timeOnly
+        @keydown.enter="updateEndedAt(endedAt)"
+      />
+      <Button v-if="isEndedAtEditable" label="OK" @click="updateEndedAt(endedAt)" />
+      <template v-for="n in Array.from({ length: 5 }, (_, i) => -5 + i)" :key="n">
         <Button
-          v-if="!isStartedAtEditable"
-          @click="isStartedAtEditable = true"
-          label="Edit start"
+          v-if="!isEndedAtEditable"
+          :label="'' + n"
           severity="secondary"
+          @click="updateEndedAt(addMinutes(n))"
         ></Button>
-        <div v-else>
-          <p>Edit start:</p>
-          <div class="flex flex-wrap gap-4">
-            <DatePicker
-              class="w-20"
-              v-model="startedAt"
-              timeOnly
-              @keydown.enter="updateStartedAt(startedAt)"
-            />
-            <Button severity="secondary" label="OK" @click="updateStartedAt(startedAt)" />
-            <template v-for="n in Array.from({ length: 5 }, (_, i) => -5 + i)" :key="n">
-              <Button
-                :label="'' + n"
-                severity="secondary"
-                @click="updateStartedAt(addMinutes(n))"
-              ></Button>
-            </template>
-          </div>
-        </div>
-      </div>
-
-      <div class="mt-2">
-        <p>Tags:</p>
-        <SelectButton
-          v-model="tags"
-          :options="tagOptions"
-          multiple
-          @change="
-            updateEvent(false, {
-              properties: {
-                ...event.properties,
-                brest: tags,
-              },
-            })
-          "
-        />
-      </div>
-
-      <div class="mt-2">
-        <p>Comment:</p>
-        <InputText
-          v-model="comment"
-          @change="
-            updateEvent(false, {
-              properties: {
-                ...event.properties,
-                comment,
-              },
-            })
-          "
-        />
-      </div>
-
-      <div class="mt-2">
-        <p>Edit end:</p>
-        <div class="flex flex-wrap gap-4">
-          <DatePicker
-            class="w-20"
-            v-model="endedAt"
-            timeOnly
-            @keydown.enter="updateEndedAt(endedAt)"
-          />
-          <Button severity="secondary" label="OK" @click="updateEndedAt(endedAt)" />
-          <template v-for="n in Array.from({ length: 5 }, (_, i) => -5 + i)" :key="n">
-            <Button
-              :label="'' + n"
-              severity="secondary"
-              @click="updateEndedAt(addMinutes(n))"
-            ></Button>
-          </template>
-          <Button label="Now" @click="updateEndedAt(addMinutes(0))" />
-        </div>
-      </div>
-    </template>
-  </Card>
+      </template>
+      <Button v-if="!isEndedAtEditable" label="Now" @click="updateEndedAt(addMinutes(0))" />
+    </div>
+  </div>
 </template>

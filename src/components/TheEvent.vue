@@ -4,6 +4,7 @@ import Tag from 'primevue/tag'
 import { toRef } from 'vue'
 import type Event from '@/model/Event.ts'
 import dayjs from 'dayjs'
+import EventEditor from '@/components/EventEditor.vue'
 
 const props = defineProps<{
   index: number
@@ -12,7 +13,7 @@ const props = defineProps<{
   previousEvent?: Event
 }>()
 
-const emits = defineEmits(['edit'])
+const emits = defineEmits(['click-edit', 'click-close', 'event-updated'])
 
 const event = toRef(() => props.event)
 const tags = toRef(() => (event.value.properties?.brest as string[]) ?? [])
@@ -32,8 +33,11 @@ const duration = (minutes: number, format: string) => {
 </script>
 
 <template>
-  <Card :class="`mt-2 ${isSelected ? 'border border-teal-600' : ''}`" pt:body:class="!py-2 !gap-1" pt:content:class="empty:hidden">
-    <!--        <template #title># {{ event.id }} {{ event.name }}</template>-->
+  <Card
+    :class="`mt-2 ${isSelected ? 'border border-teal-600' : ''}`"
+    pt:body:class="!py-2 !gap-1"
+    pt:content:class="empty:hidden"
+  >
     <template #content>
       <div class="flex items-center">
         <div class="flex-grow flex flex-wrap items-center gap-2 font-mono1">
@@ -63,14 +67,15 @@ const duration = (minutes: number, format: string) => {
           </div>
           <span v-if="comment" class="text-muted-color">{{ comment }}</span>
         </div>
-        <span class="pi pi-pencil" @click="emits('edit')"></span>
+        <span v-if="isSelected" class="pi pi-times" @click="emits('click-close')"></span>
+        <span v-else class="pi pi-pencil" @click="emits('click-edit')"></span>
+      </div>
+      <div v-if="isSelected">
+        <EventEditor
+          :event="event"
+          @event-updated="emits('event-updated', $event)"
+        />
       </div>
     </template>
-    <!--    <template #content>-->
-    <!--      <div v-if="props.event.properties?.brest?.length > 0" class="flex gap-1">-->
-    <!--        <Tag v-if="props.event.properties.brest.includes('Left')" severity="success" value="Left" />-->
-    <!--        <Tag v-if="props.event.properties.brest.includes('Right')" severity="info" value="Right" />-->
-    <!--      </div>-->
-    <!--    </template>-->
   </Card>
 </template>

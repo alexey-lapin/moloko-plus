@@ -2,51 +2,63 @@
 import Button from 'primevue/button'
 
 import TheNav from '@/components/TheNav.vue'
-import { computed, onMounted, ref, type Ref } from 'vue'
+import TheEvent from '@/components/TheEvent.vue'
+import { onMounted, ref, type Ref } from 'vue'
 import { supabase } from '@/supabase.ts'
 
-import dayjs from 'dayjs'
+import dayjs, { Dayjs } from 'dayjs'
 import duration from 'dayjs/plugin/duration'
 import utc from 'dayjs/plugin/utc'
 
 import type Event from '@/model/Event.ts'
-import TheEvent from '@/components/TheEvent.vue'
-import EventEditor from '@/components/EventEditor.vue'
 
 dayjs.extend(duration)
 dayjs.extend(utc)
 
-const events: Ref<Event[]> = ref([])
-const allEvents: Ref<Event[]> = ref([])
+const lastEvent: Ref<Event | null> = ref(null)
+const eventsByDate: Ref<[Dayjs, Event[]][]> = ref([])
 
-const selectedIndex: Ref<number | null> = ref(null)
-const selectedEvent = computed(() => {
-  return selectedIndex.value === null ? null : allEvents.value[selectedIndex.value]
-})
+const selectedId: Ref<number | null> = ref(null)
 
-const timeSinceLastEvent = ref()
+const timeSinceLastEvent: Ref<string | null> = ref(null)
 
 async function getEvents() {
-  const { data: todayData } = await supabase
+  const { data } = await supabase
     .from('events')
     .select()
-    .gte('started_at', dayjs().startOf('day').utc().toISOString())
+    .gte('started_at', dayjs().subtract(7, 'd').startOf('day').utc().toISOString())
     .order('id', { ascending: true })
 
-  const { data: previousData } = await supabase
-    .from('events')
-    .select()
-    .lt('started_at', dayjs().startOf('day').utc().toISOString())
-    .order('id', { ascending: false })
-    .limit(1)
+  const allEvents = (data as Event[]) ?? []
+  lastEvent.value = allEvents[allEvents.length - 1]
 
-  events.value = (todayData as Event[]) ?? []
-  allEvents.value = ((previousData as Event[]) ?? []).concat(events.value)
-  const lastEvent = allEvents.value[allEvents.value.length - 1]
+  eventsByDate.value = allEvents.reduce(
+    (acc, event) => {
+      const date = dayjs(event.started_at).startOf('day')
+      const existing = acc.find(([d]) => d.diff() === date.diff())
+      if (existing) {
+        existing[1].push(event)
+      } else {
+        acc.push([date, [event]])
+      }
+      return acc
+    },
+    [] as [Dayjs, Event[]][],
+  )
 
-  if (selectedIndex.value === null && lastEvent.ended_at === null) {
-    selectedIndex.value = allEvents.value.length - 1
+  if (selectedId.value === null && lastEvent.value.ended_at === null) {
+    selectedId.value = lastEvent.value.id
   }
+}
+
+function getPreviousEvent(dayIndex: number, eventIndex: number) {
+  if (dayIndex === 0 && eventIndex === 0) {
+    return undefined
+  }
+  if (eventIndex === 0) {
+    return eventsByDate.value[dayIndex - 1][1][eventsByDate.value[dayIndex - 1][1].length - 1]
+  }
+  return eventsByDate.value[dayIndex][1][eventIndex - 1]
 }
 
 function startEvent(type: string) {
@@ -61,10 +73,6 @@ function startEvent(type: string) {
     })
 }
 
-function getFormattedDate() {
-  return dayjs().format('MMMM DD')
-}
-
 function onEditorUpdate(unselect: boolean) {
   console.log('unselect', unselect)
   if (unselect) {
@@ -74,26 +82,26 @@ function onEditorUpdate(unselect: boolean) {
 }
 
 function selectEvent(index: number) {
-  selectedIndex.value = index
+  selectedId.value = index
 }
 
 function unselectEvent() {
-  selectedIndex.value = null
+  selectedId.value = null
 }
 
 function calculateTimeSinceLastEvent(): string {
-  const lastEvent = allEvents.value[allEvents.value.length - 1]
-  return dayjs.duration(dayjs().diff(dayjs(lastEvent.started_at))).format('HH:mm:ss')
+  if (lastEvent.value === null) {
+    return ''
+  }
+  return dayjs.duration(dayjs().diff(dayjs(lastEvent.value.started_at))).format('HH:mm:ss')
 }
 
 setInterval(() => {
   timeSinceLastEvent.value = calculateTimeSinceLastEvent()
 }, 1000)
 
-function age() {
-  const ageDays = Math.floor(
-    dayjs.duration(dayjs().diff(dayjs('2024-12-05 14:35:00-05:00'))).asDays(),
-  )
+function age(to: Dayjs) {
+  const ageDays = Math.floor(dayjs.duration(to.diff(dayjs('2024-12-05 14:35:00-05:00'))).asDays())
   return `${Math.floor(ageDays / 7)}w ${ageDays % 7}d`
 }
 
@@ -104,35 +112,32 @@ onMounted(() => {
 
 <template>
   <TheNav />
-  <div v-if="allEvents.length > 0">
-    <h1 class="mt-4 ml-3 font-bold">{{ dayjs(allEvents[0].started_at).format('MMMM DD') }}</h1>
-    <TheEvent :event="allEvents[0]" :index="0" :is-selected="false" />
-  </div>
-  <h1 class="mt-4 ml-3 font-bold">{{ getFormattedDate() }} - {{ age() }} ({{ events.length }})</h1>
-  <div class="flex flex-col gap-4">
-    <div v-if="allEvents.length > 0">
-      <template v-for="index in allEvents.length">
+
+  <div class="flex flex-col gap-3 mt-2">
+    <div v-for="(day, dayIndex) in eventsByDate" :key="day[0].unix()">
+      <div>
+        <h1 class="ml-3 font-bold">
+          {{ day[0].format('MMMM DD') }} -
+          {{ age(dayjs(day[1][day[1].length - 1].started_at)) }} ({{ day[1].length }})
+        </h1>
         <TheEvent
-          v-if="index > 1"
-          :key="allEvents[index - 1].id"
-          :index="index - 1"
-          :is-selected="selectedIndex === index - 1"
-          :event="allEvents[index - 1]"
-          :previous-event="allEvents[index - 2]"
-          @edit="selectEvent(index - 1)"
+          v-for="(event, eventIndex) in day[1]"
+          :key="event.id"
+          :index="eventIndex + 1"
+          :is-selected="selectedId === event.id"
+          :event="event"
+          :previous-event="getPreviousEvent(dayIndex, eventIndex)"
+          @click-edit="selectEvent(event.id)"
+          @click-close="unselectEvent()"
+          @event-updated="onEditorUpdate($event)"
         />
-      </template>
+      </div>
     </div>
-    <p class="ml-3">Since last event: {{ timeSinceLastEvent }}</p>
-    <div v-if="selectedEvent">
-      <EventEditor
-        :event="selectedEvent"
-        @event-closed="unselectEvent"
-        @event-updated="onEditorUpdate($event)"
-      />
-    </div>
-    <div v-else class="ml-3">
-      <Button label="Brestfeeding" @click="startEvent('brestfeeding')" />
-    </div>
+  </div>
+
+  <p class="mt-2 ml-3">Since last event: {{ timeSinceLastEvent }}</p>
+  <div class="mt-2 ml-3 mb-3 flex gap-4">
+    <Button icon="pi pi-refresh" severity="secondary" @click="getEvents()" />
+    <Button label="Brestfeeding" @click="startEvent('brestfeeding')" />
   </div>
 </template>
