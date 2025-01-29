@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import Card from 'primevue/card'
 import Tag from 'primevue/tag'
-import { toRef } from 'vue'
+import { onMounted, onUnmounted, ref, toRef } from 'vue'
 import type Event from '@/model/Event.ts'
 import dayjs from 'dayjs'
 import EventEditor from '@/components/EventEditor.vue'
@@ -30,6 +30,25 @@ const getMinutesDifference = (start: string, end: string) => {
 const duration = (minutes: number, format: string) => {
   return dayjs.duration(minutes, 'minutes').format(format)
 }
+
+const timeSinceStart = ref<string | null>(null)
+let timer: ReturnType<typeof setInterval> | null = null
+
+onMounted(() => {
+  if (props.isSelected) {
+    timer = setInterval(() => {
+      timeSinceStart.value = dayjs
+        .duration(dayjs().diff(dayjs(event.value.started_at)))
+        .format('mm:ss')
+    })
+  }
+})
+
+onUnmounted(() => {
+  if (timer) {
+    clearInterval(timer)
+  }
+})
 </script>
 
 <template>
@@ -40,7 +59,7 @@ const duration = (minutes: number, format: string) => {
   >
     <template #content>
       <div class="flex items-center">
-        <div class="flex-grow flex flex-wrap items-center gap-2 font-mono1">
+        <div :class="`flex-grow flex flex-wrap items-center gap-2 ${isSelected ? 'text-lg' : ''}`">
           <span class="font-bold">{{ index }}</span>
 
           <span v-if="event.ended_at">
@@ -58,6 +77,7 @@ const duration = (minutes: number, format: string) => {
           <span v-if="event.ended_at">
             {{ duration(getMinutesDifference(event.started_at, event.ended_at), 'mm') }}]
           </span>
+          <span v-else-if="isSelected">{{ timeSinceStart }}]</span>
           <span v-else>]</span>
 
           <div v-if="tags.length > 0" class="flex gap-1">
@@ -71,10 +91,7 @@ const duration = (minutes: number, format: string) => {
         <span v-else class="cursor-pointer pi pi-pencil" @click="emits('click-edit')"></span>
       </div>
       <div v-if="isSelected">
-        <EventEditor
-          :event="event"
-          @event-updated="emits('event-updated', { event: event, unselect: $event })"
-        />
+        <EventEditor :event="event" @event-updated="emits('event-updated', $event)" />
       </div>
     </template>
   </Card>

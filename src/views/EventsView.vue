@@ -78,13 +78,13 @@ function startEvent(type: string) {
     })
 }
 
-function onEditorUpdate(ev: { event: Event, unselect: boolean}) {
-  if (ev.unselect) {
+function onEditorUpdate(dayIndex: number, eventIndex: number, unselect: boolean) {
+  if (unselect) {
     unselectEvent()
   }
   getEvents().then(() => {
-    if (ev.unselect) {
-      sendMessageToBot({ event: ev.event, start: false })
+    if (unselect) {
+      sendMessageToBot({ event: eventsByDate.value[dayIndex][1][eventIndex], start: false })
     }
   })
 }
@@ -186,14 +186,14 @@ onMounted(() => {
           :previous-event="getPreviousEvent(dayIndex, eventIndex)"
           @click-edit="selectEvent(event.id)"
           @click-close="unselectEvent()"
-          @event-updated="onEditorUpdate($event)"
+          @event-updated="onEditorUpdate(dayIndex, eventIndex, $event)"
         />
       </div>
     </div>
   </div>
 
   <p class="mt-2 ml-3">Since last event: {{ timeSinceLastEvent }}</p>
-  <div class="mt-2 ml-3 mb-3 flex gap-4">
+  <div class="mt-2 ml-3 mb-10 flex gap-4">
     <Button icon="pi pi-refresh" severity="secondary" @click="getEvents()" />
     <Button label="Brestfeeding" @click="startEvent('brestfeeding')" />
 <!--    <Button label="Bottle" @click="sendMessageToBot({'event': eventsByDate[0][1][0], 'start': false })" />-->

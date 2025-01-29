@@ -76,9 +76,9 @@ watch(
 </script>
 
 <template>
-  <p class="text-lg"># {{ event.id }} {{ event.name }}</p>
+<!--  <p class="text-lg"># {{ event.id }} {{ event.name }}</p>-->
   <div>
-    <p>Edit start:</p>
+    <p class="mt-5">Edit start:</p>
     <Button
       v-if="!isStartedAtEditable"
       @click="isStartedAtEditable = true"
