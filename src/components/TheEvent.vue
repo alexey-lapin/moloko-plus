@@ -68,7 +68,7 @@ const duration = (minutes: number, format: string) => {
           <span v-if="comment" class="text-muted-color">{{ comment }}</span>
         </div>
         <span v-if="isSelected" class="pi pi-times" @click="emits('click-close')"></span>
-        <span v-else class="pi pi-pencil" @click="emits('click-edit')"></span>
+        <span v-else class="cursor-pointer pi pi-pencil" @click="emits('click-edit')"></span>
       </div>
       <div v-if="isSelected">
         <EventEditor

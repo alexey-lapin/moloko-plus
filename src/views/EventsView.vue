@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Button from 'primevue/button'
+import Message from 'primevue/message'
 
 import TheNav from '@/components/TheNav.vue'
 import TheEvent from '@/components/TheEvent.vue'
@@ -19,6 +20,8 @@ const lastEvent: Ref<Event | null> = ref(null)
 const eventsByDate: Ref<[Dayjs, Event[]][]> = ref([])
 
 const selectedId: Ref<number | null> = ref(null)
+
+const isCopiedMessageVisible: Ref<{ [key: number]: boolean }> = ref({})
 
 const timeSinceLastEvent: Ref<string | null> = ref(null)
 
@@ -105,6 +108,28 @@ function age(to: Dayjs) {
   return `${Math.floor(ageDays / 7)}w ${ageDays % 7}d`
 }
 
+function copyEvents(dayIndex: number) {
+  const events = eventsByDate.value[dayIndex][1]
+  const text = events
+    .map((event, index) => {
+      const previousEvent = getPreviousEvent(dayIndex, index)
+      return (
+        `${dayjs(event.started_at).format('HH:mm')} - ` +
+        `${event.ended_at ? dayjs(event.ended_at).format('HH:mm') : ''} ` +
+        `[${dayjs.duration(dayjs(event.started_at).diff(previousEvent?.started_at)).format('HH:mm')};` +
+        `${event.ended_at ? dayjs.duration(dayjs(event.ended_at).diff(event.started_at)).format('mm') : ''}] ` +
+        `${event.properties?.brest ? (<string[]>event.properties.brest).join(', ') : ''}`
+      )
+    })
+    .join('\n')
+  navigator.clipboard.writeText(text)
+
+  isCopiedMessageVisible.value[dayIndex] = true
+  setTimeout(() => {
+    isCopiedMessageVisible.value[dayIndex] = false
+  }, 3500)
+}
+
 onMounted(() => {
   getEvents()
 })
@@ -116,10 +141,21 @@ onMounted(() => {
   <div class="flex flex-col gap-3 mt-2">
     <div v-for="(day, dayIndex) in eventsByDate" :key="day[0].unix()">
       <div>
-        <h1 class="ml-3 font-bold">
-          {{ day[0].format('MMMM DD') }} -
-          {{ age(dayjs(day[1][day[1].length - 1].started_at)) }} ({{ day[1].length }})
-        </h1>
+        <div class="flex items-center gap-2 min-h-7">
+          <h1 class="ml-3 font-bold">
+            {{ day[0].format('MMMM DD') }} -
+            {{ age(dayjs(day[1][day[1].length - 1].started_at)) }} ({{ day[1].length }})
+          </h1>
+          <span class="cursor-pointer pi pi-copy" @click="copyEvents(dayIndex)"></span>
+          <Message
+            v-if="isCopiedMessageVisible[dayIndex]"
+            severity="success"
+            variant="simple"
+            icon="pi pi-check"
+            :life="3000"
+            >Copied
+          </Message>
+        </div>
         <TheEvent
           v-for="(event, eventIndex) in day[1]"
           :key="event.id"
