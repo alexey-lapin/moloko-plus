@@ -72,17 +72,21 @@ function startEvent(type: string) {
       started_at: new Date().toISOString(),
     })
     .then(() => {
-      getEvents()
-      sendMessageToBot({ event: lastEvent.value, start: true })
+      getEvents().then(() => {
+        sendMessageToBot({ event: lastEvent.value, start: true })
+      })
     })
 }
 
 function onEditorUpdate(ev: { event: Event, unselect: boolean}) {
   if (ev.unselect) {
     unselectEvent()
-    sendMessageToBot({ event: ev.event, start: false })
   }
-  getEvents()
+  getEvents().then(() => {
+    if (ev.unselect) {
+      sendMessageToBot({ event: ev.event, start: false })
+    }
+  })
 }
 
 function selectEvent(index: number) {
