@@ -4,7 +4,7 @@ import Message from 'primevue/message'
 
 import TheNav from '@/components/TheNav.vue'
 import TheEvent from '@/components/TheEvent.vue'
-import { onMounted, ref, type Ref } from 'vue'
+import { onMounted, onUnmounted, ref, type Ref } from 'vue'
 import { supabase } from '@/supabase.ts'
 
 import dayjs, { Dayjs } from 'dayjs'
@@ -104,10 +104,6 @@ function calculateTimeSinceLastEvent(): string {
   return dayjs.duration(dayjs().diff(dayjs(lastEvent.value.started_at))).format('HH:mm:ss')
 }
 
-setInterval(() => {
-  timeSinceLastEvent.value = calculateTimeSinceLastEvent()
-}, 1000)
-
 function age(to: Dayjs) {
   const ageDays = Math.floor(dayjs.duration(to.diff(dayjs('2024-12-05 14:35:00-05:00'))).asDays())
   return `${Math.floor(ageDays / 7)}w ${ageDays % 7}d`
@@ -135,7 +131,7 @@ function copyEvents(dayIndex: number) {
   }, 3500)
 }
 
-function sendMessageToBot(botMessage: { event: Event | null, start: boolean}) {
+function sendMessageToBot(botMessage: { event: Event | null; start: boolean }) {
   let message: string
   if (botMessage.start) {
     message = `#${botMessage.event?.id} ${botMessage.event?.name} started at ${dayjs(botMessage.event?.started_at).format('HH:mm')}`
@@ -151,8 +147,28 @@ function sendMessageToBot(botMessage: { event: Event | null, start: boolean}) {
     })
 }
 
+function scrollToBottom() {
+  const el = document.getElementById('actions')
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth' })
+  }
+}
+
+let timer: ReturnType<typeof setInterval> | null = null
+
 onMounted(() => {
-  getEvents()
+  getEvents().then(() => {
+    scrollToBottom()
+  })
+  timer = setInterval(() => {
+    timeSinceLastEvent.value = calculateTimeSinceLastEvent()
+  }, 1000)
+})
+
+onUnmounted(() => {
+  if (timer) {
+    clearInterval(timer)
+  }
 })
 </script>
 
@@ -192,10 +208,13 @@ onMounted(() => {
     </div>
   </div>
 
-  <p class="mt-2 ml-3">Since last event: {{ timeSinceLastEvent }}</p>
-  <div class="mt-2 ml-3 mb-10 flex gap-4">
+  <p v-if="!selectedId" class="mt-2 ml-3">Since last event: {{ timeSinceLastEvent }}</p>
+  <div id="actions" class="mt-3 ml-3 mb-10 flex gap-4">
     <Button icon="pi pi-refresh" severity="secondary" @click="getEvents()" />
-    <Button label="Brestfeeding" @click="startEvent('brestfeeding')" />
-<!--    <Button label="Bottle" @click="sendMessageToBot({'event': eventsByDate[0][1][0], 'start': false })" />-->
+    <Button
+      label="Brestfeeding"
+      @click="startEvent('brestfeeding')"
+      :severity="selectedId ? 'secondary' : 'primary'"
+    />
   </div>
 </template>

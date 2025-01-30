@@ -77,12 +77,12 @@ watch(
 
 <template>
 <!--  <p class="text-lg"># {{ event.id }} {{ event.name }}</p>-->
-  <div>
-    <p class="mt-5">Edit start:</p>
+  <div class="mt-4">
+    <p>Start:</p>
     <Button
       v-if="!isStartedAtEditable"
       @click="isStartedAtEditable = true"
-      label="Edit start"
+      icon="pi pi-pencil"
       severity="secondary"
     ></Button>
     <div v-else>
@@ -122,30 +122,9 @@ watch(
     />
   </div>
 
-  <div class="mt-2">
-    <p>Comment:</p>
-    <InputText
-      v-model="comment"
-      @change="
-        updateEvent(false, {
-          properties: {
-            ...event.properties,
-            comment,
-          },
-        })
-      "
-    />
-  </div>
-
-  <div class="mt-2 mb-2">
-    <p>Edit end:</p>
+  <div class="mt-2 ">
+    <p>End:</p>
     <div class="flex flex-wrap gap-4">
-      <Button
-        v-if="!isEndedAtEditable"
-        @click="isEndedAtEditable = true"
-        label="Edit end"
-        severity="secondary"
-      ></Button>
       <DatePicker
         v-if="isEndedAtEditable"
         class="w-20"
@@ -163,6 +142,27 @@ watch(
         ></Button>
       </template>
       <Button v-if="!isEndedAtEditable" label="Now" @click="updateEndedAt(addMinutes(0))" />
+      <Button
+        v-if="!isEndedAtEditable"
+        @click="isEndedAtEditable = true"
+        icon="pi pi-pencil"
+        severity="secondary"
+      ></Button>
     </div>
+  </div>
+
+  <div class="mt-2 mb-2">
+    <p>Comment:</p>
+    <InputText
+      v-model="comment"
+      @change="
+        updateEvent(false, {
+          properties: {
+            ...event.properties,
+            comment,
+          },
+        })
+      "
+    />
   </div>
 </template>
