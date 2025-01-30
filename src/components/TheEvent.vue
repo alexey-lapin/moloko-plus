@@ -85,7 +85,7 @@ onUnmounted(() => {
               v-if="tags.includes('Left')"
               severity="success"
               value="L"
-              class="dark:!bg-fuchsia-800/35 dark:!text-white"
+              class="dark:!bg-purple-300/35 dark:!text-white"
             />
             <Tag v-if="tags.includes('Right')" severity="info" value="R" />
             <Tag v-if="tags.includes('D3')" severity="warn" value="D3" />
