@@ -122,9 +122,9 @@ watch(
     />
   </div>
 
-  <div class="mt-2 ">
+  <div class="mt-2">
     <p>End:</p>
-    <div class="flex flex-wrap gap-3">
+    <div class="flex flex-wrap gap-2">
       <DatePicker
         v-if="isEndedAtEditable"
         class="w-20"
