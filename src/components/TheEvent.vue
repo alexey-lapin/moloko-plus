@@ -69,14 +69,14 @@ onUnmounted(() => {
 
 <template>
   <Card
-    :class="`mt-2 ${isSelected ? 'border border-teal-600' : ''}`"
-    pt:body:class="!py-2 !gap-1"
+    :class="`${isSelected ? 'border border-teal-600' : ''}`"
+    pt:body:class="!py-1 !gap-1"
     pt:content:class="empty:hidden"
   >
     <template #content>
       <div class="flex items-center">
-        <div :class="`flex-grow flex flex-wrap items-center gap-2 ${isSelected ? 'text-lg' : ''}`">
-          <span class="font-bold">{{ index }}</span>
+        <div :class="`flex-grow flex flex-wrap items-center 1font-[Avenir_Next] gap-2 ${isSelected ? 'text-lg' : ''}`">
+          <span class="font-bold">{{ index.toString().padStart(2, '0') }}</span>
 
           <span>{{ composeLine() }}</span>
 

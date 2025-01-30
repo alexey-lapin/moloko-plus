@@ -175,7 +175,7 @@ onUnmounted(() => {
 <template>
   <TheNav />
 
-  <div class="flex flex-col gap-3 mt-2">
+  <div class="flex flex-col gap-6 mt-2">
     <div v-for="(day, dayIndex) in eventsByDate" :key="day[0].unix()">
       <div>
         <div class="flex items-center gap-2 min-h-7">
@@ -193,17 +193,20 @@ onUnmounted(() => {
             >Copied
           </Message>
         </div>
-        <TheEvent
-          v-for="(event, eventIndex) in day[1]"
-          :key="event.id"
-          :index="eventIndex + 1"
-          :is-selected="selectedId === event.id"
-          :event="event"
-          :previous-event="getPreviousEvent(dayIndex, eventIndex)"
-          @click-edit="selectEvent(event.id)"
-          @click-close="unselectEvent()"
-          @event-updated="onEditorUpdate(dayIndex, eventIndex, $event)"
-        />
+
+        <div class="flex flex-col gap-0.5">
+          <TheEvent
+            v-for="(event, eventIndex) in day[1]"
+            :key="event.id"
+            :index="eventIndex + 1"
+            :is-selected="selectedId === event.id"
+            :event="event"
+            :previous-event="getPreviousEvent(dayIndex, eventIndex)"
+            @click-edit="selectEvent(event.id)"
+            @click-close="unselectEvent()"
+            @event-updated="onEditorUpdate(dayIndex, eventIndex, $event)"
+          />
+        </div>
       </div>
     </div>
   </div>
