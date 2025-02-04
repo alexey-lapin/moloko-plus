@@ -38,7 +38,7 @@ async function getEvents() {
   eventsByDate.value = allEvents.reduce(
     (acc, event) => {
       const date = dayjs(event.started_at).startOf('day')
-      const existing = acc.find(([d]) => d.diff() === date.diff())
+      const existing = acc.find(([d]) => d.unix() === date.unix())
       if (existing) {
         existing[1].push(event)
       } else {
@@ -72,9 +72,13 @@ function startEvent(type: string) {
       started_at: new Date().toISOString(),
     })
     .then(() => {
-      getEvents().then(() => {
-        sendMessageToBot({ event: lastEvent.value, start: true })
-      })
+      getEvents()
+    })
+    .then(() => {
+      scrollToBottom()
+    })
+    .then(() => {
+      sendMessageToBot({ event: lastEvent.value, start: true })
     })
 }
 
@@ -105,7 +109,7 @@ function calculateTimeSinceLastEvent(): string {
 }
 
 function age(to: Dayjs) {
-  const ageDays = Math.floor(dayjs.duration(to.diff(dayjs('2024-12-05 14:35:00-05:00'))).asDays())
+  const ageDays = Math.floor(dayjs.duration(to.diff(dayjs('2024-12-05 00:00:00-05:00'))).asDays())
   return `${Math.floor(ageDays / 7)}w ${ageDays % 7}d`
 }
 
@@ -148,7 +152,7 @@ function sendMessageToBot(botMessage: { event: Event | null; start: boolean }) {
 }
 
 function scrollToBottom() {
-  const el = document.getElementById('actions')
+  const el = document.getElementById('bottom')
   if (el) {
     el.scrollIntoView({ behavior: 'smooth' })
   }
@@ -210,9 +214,8 @@ onUnmounted(() => {
       </div>
     </div>
   </div>
-
   <p v-if="!selectedId" class="mt-2 ml-3">Since last event: {{ timeSinceLastEvent }}</p>
-  <div id="actions" class="mt-3 ml-3 mb-10 flex gap-4">
+  <div class="mt-3 ml-3 mb-10 flex gap-4">
     <Button icon="pi pi-refresh" severity="secondary" @click="getEvents()" />
     <Button
       label="Brestfeeding"
@@ -220,4 +223,5 @@ onUnmounted(() => {
       :severity="selectedId ? 'secondary' : 'primary'"
     />
   </div>
+  <div id="bottom"></div>
 </template>

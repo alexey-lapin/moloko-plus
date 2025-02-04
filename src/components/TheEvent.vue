@@ -35,7 +35,7 @@ const composeLine = () => {
   return (
     (event.value.ended_at
       ? `${formatDate(event.value.started_at)} - ${formatDate(event.value.ended_at)}`
-      : `${formatDate(event.value.started_at)} - In progress`) +
+      : `${formatDate(event.value.started_at)} - 🍼`) +
     (props.previousEvent
       ? ` [${duration(getMinutesDifference(props.previousEvent.started_at, event.value.started_at), 'HH:mm')}; `
       : '[') +
@@ -75,10 +75,10 @@ onUnmounted(() => {
   >
     <template #content>
       <div class="flex items-center">
-        <div :class="`flex-grow flex flex-wrap items-center 1font-[Avenir_Next] gap-2 ${isSelected ? 'text-lg' : ''}`">
+        <div :class="`flex-grow flex flex-wrap items-center gap-2 ${isSelected ? 'font-bold' : ''}`">
           <span class="font-bold">{{ index.toString().padStart(2, '0') }}</span>
 
-          <span>{{ composeLine() }}</span>
+          <span :class="`${isSelected ? 'font-bold' : ''}`">{{ composeLine() }}</span>
 
           <div v-if="tags.length > 0" class="flex gap-1">
             <Tag
