@@ -35,9 +35,12 @@ const updateStartedAt = (date: Date | null) => {
   if (date === null) {
     return
   }
-  updateEvent(false, {
-    started_at: date.toISOString(),
-  })
+  if (event.value.started_at != date.toISOString()) {
+    updateEvent(false, {
+      started_at: date.toISOString(),
+    })
+  }
+  isStartedAtEditable.value = false
 }
 
 const updateEndedAt = (date: Date | null) => {
@@ -76,32 +79,32 @@ watch(
 </script>
 
 <template>
-<!--  <p class="text-lg"># {{ event.id }} {{ event.name }}</p>-->
-  <div class="mt-4">
+  <!--  <p class="text-lg"># {{ event.id }} {{ event.name }}</p>-->
+  <div class="mt-0">
     <p>Start:</p>
-    <Button
-      v-if="!isStartedAtEditable"
-      @click="isStartedAtEditable = true"
-      icon="pi pi-pencil"
-      severity="secondary"
-    ></Button>
-    <div v-else>
-      <div class="flex flex-wrap gap-4">
-        <DatePicker
-          class="w-20"
-          v-model="startedAt"
-          timeOnly
-          @keydown.enter="updateStartedAt(startedAt)"
-        />
-        <Button severity="secondary" label="OK" @click="updateStartedAt(startedAt)" />
-        <template v-for="n in Array.from({ length: 5 }, (_, i) => -5 + i)" :key="n">
-          <Button
-            :label="'' + n"
-            severity="secondary"
-            @click="updateStartedAt(addMinutes(n))"
-          ></Button>
-        </template>
-      </div>
+    <div class="flex flex-wrap gap-2">
+      <DatePicker
+        v-if="isStartedAtEditable"
+        class="w-20"
+        v-model="startedAt"
+        timeOnly
+        @keydown.enter="updateStartedAt(startedAt)"
+      />
+      <Button v-if="isStartedAtEditable" label="OK" @click="updateStartedAt(startedAt)" />
+      <template v-for="n in Array.from({ length: 5 }, (_, i) => -5 + i)" :key="n">
+        <Button
+          v-if="!isStartedAtEditable"
+          :label="'' + n"
+          severity="secondary"
+          @click="updateStartedAt(addMinutes(n))"
+        ></Button>
+      </template>
+      <Button
+        v-if="!isStartedAtEditable"
+        @click="isStartedAtEditable = true"
+        icon="pi pi-pencil"
+        severity="secondary"
+      ></Button>
     </div>
   </div>
 
