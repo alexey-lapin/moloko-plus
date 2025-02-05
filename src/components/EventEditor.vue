@@ -1,12 +1,14 @@
 <script setup lang="ts">
+import { ref, type Ref, toRef, watch } from 'vue'
+import dayjs from 'dayjs'
+
 import Button from 'primevue/button'
 import DatePicker from 'primevue/datepicker'
 import SelectButton from 'primevue/selectbutton'
+
 import InputText from 'primevue/inputtext'
-import { ref, type Ref, toRef, watch } from 'vue'
 import type Event from '@/model/Event.ts'
 import { supabase } from '@/supabase.ts'
-import dayjs from 'dayjs'
 
 const props = defineProps<{
   event: Event
@@ -25,7 +27,8 @@ const endedAt: Ref<Date | null> = ref(event.value.ended_at ? new Date(event.valu
 const tags = ref((event.value.properties?.brest as string[]) ?? [])
 const comment = ref((event.value.properties?.comment as string) ?? null)
 
-const tagOptions = ref(['Left', 'Right', 'D3'])
+const tagOptions = ref([{ value: 'Left' }, { value: 'Right' }, { value: 'D3' }])
+// const tagOptions = ref(['Left', 'Right', 'D3'])
 
 const addMinutes = (minutes: number) => {
   return dayjs().add(minutes, 'minute').toDate()
@@ -113,6 +116,9 @@ watch(
     <SelectButton
       v-model="tags"
       :options="tagOptions"
+      data-key="value"
+      option-label="value"
+      option-value="value"
       multiple
       @change="
         updateEvent(false, {
@@ -122,7 +128,11 @@ watch(
           },
         })
       "
-    />
+    >
+      <template #option="slotProps">
+        <span>{{ slotProps.option.value }}</span>
+      </template>
+    </SelectButton>
   </div>
 
   <div class="mt-2">

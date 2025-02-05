@@ -72,7 +72,7 @@ function startEvent(type: string) {
       started_at: new Date().toISOString(),
     })
     .then(() => {
-      getEvents()
+      return getEvents()
     })
     .then(() => {
       scrollToBottom()
