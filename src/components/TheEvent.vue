@@ -35,7 +35,7 @@ const composeLine = () => {
   return (
     (event.value.ended_at
       ? `${formatDate(event.value.started_at)} - ${formatDate(event.value.ended_at)}`
-      : `${formatDate(event.value.started_at)} - 🍼`) +
+      : `${formatDate(event.value.started_at)} - 🧃👧🏼`) +
     (props.previousEvent
       ? ` [${duration(getMinutesDifference(props.previousEvent.started_at, event.value.started_at), 'HH:mm')}; `
       : '[') +
