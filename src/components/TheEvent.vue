@@ -70,12 +70,12 @@ onUnmounted(() => {
 <template>
   <Card
     :class="`${isSelected ? 'border border-teal-600' : ''}`"
-    pt:body:class="!py-1 !gap-1"
+    :pt:body:class="`${isSelected ? '' : '!py-1'} !gap-1`"
     pt:content:class="empty:hidden"
   >
     <template #content>
       <div class="flex items-center">
-        <div :class="`flex-grow flex flex-wrap items-center gap-2 ${isSelected ? 'font-bold' : ''}`">
+        <div :class="`flex-grow flex flex-wrap items-center gap-2 gap-y-0 ${isSelected ? 'font-bold' : ''}`">
           <span class="font-bold">{{ index.toString().padStart(2, '0') }}</span>
 
           <span :class="`${isSelected ? 'font-bold' : ''}`">{{ composeLine() }}</span>
