@@ -27,7 +27,14 @@ const endedAt: Ref<Date | null> = ref(event.value.ended_at ? new Date(event.valu
 const tags = ref((event.value.properties?.brest as string[]) ?? [])
 const comment = ref((event.value.properties?.comment as string) ?? null)
 
-const tagOptions = ref([{ value: 'Left' }, { value: 'Right' }, { value: 'D3' }])
+const tagOptions = ref([
+  { value: 'Left', class: 'left' },
+  { value: 'Right', class: 'right' },
+  {
+    value: 'D3',
+    class: 'd3',
+  },
+])
 // const tagOptions = ref(['Left', 'Right', 'D3'])
 
 const addMinutes = (minutes: number) => {
@@ -130,7 +137,7 @@ watch(
       "
     >
       <template #option="slotProps">
-        <span>{{ slotProps.option.value }}</span>
+        <span :class="slotProps.option.class">{{ slotProps.option.value }}</span>
       </template>
     </SelectButton>
   </div>
@@ -179,3 +186,39 @@ watch(
     />
   </div>
 </template>
+
+<style scoped>
+:deep(.p-togglebutton.p-togglebutton-checked:has(.left)::before) {
+  background-color: var(--p-primary-100);
+}
+
+:deep(.p-togglebutton.p-togglebutton-checked:has(.left)) {
+  color: var(--p-primary-700);
+}
+
+:deep(.p-togglebutton.p-togglebutton-checked:has(.right)::before) {
+  background-color: var(--p-sky-200);
+}
+
+:deep(.p-togglebutton.p-togglebutton-checked:has(.right)) {
+  color: var(--p-sky-700);
+}
+
+:deep(.p-togglebutton.p-togglebutton-checked:has(.d3)::before) {
+  background-color: var(--p-orange-100);
+}
+
+:deep(.p-togglebutton.p-togglebutton-checked:has(.d3)) {
+  color: var(--p-orange-700);
+}
+
+@media (prefers-color-scheme: dark) {
+  :deep(.p-togglebutton.p-togglebutton-checked:has(.left)::before) {
+    background-color: rgb(216 180 254 / 0.35) !important;
+  }
+
+  :deep(.p-togglebutton.p-togglebutton-checked:has(.left)) {
+    color: var(--p-purple-200);
+  }
+}
+</style>

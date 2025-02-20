@@ -75,7 +75,9 @@ onUnmounted(() => {
   >
     <template #content>
       <div class="flex items-center">
-        <div :class="`flex-grow flex flex-wrap items-center gap-2 gap-y-0 ${isSelected ? 'font-bold' : ''}`">
+        <div
+          :class="`flex-grow flex flex-wrap items-center gap-2 gap-y-0 ${isSelected ? 'font-bold' : ''}`"
+        >
           <span class="font-bold">{{ index.toString().padStart(2, '0') }}</span>
 
           <span :class="`${isSelected ? 'font-bold' : ''}`">{{ composeLine() }}</span>
@@ -85,9 +87,14 @@ onUnmounted(() => {
               v-if="tags.includes('Left')"
               severity="success"
               value="L"
-              class="dark:!bg-purple-300/35 dark:!text-white"
+              class="dark:!bg-purple-300/50 dark:!text-purple-100"
             />
-            <Tag v-if="tags.includes('Right')" severity="info" value="R" />
+            <Tag
+              v-if="tags.includes('Right')"
+              severity="info"
+              value="R"
+              class="dark:!bg-sky-200 dark:!text-sky-700"
+            />
             <Tag v-if="tags.includes('D3')" severity="warn" value="D3" />
           </div>
           <span v-if="comment" class="text-muted-color">{{ comment }}</span>
