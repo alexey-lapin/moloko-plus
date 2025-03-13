@@ -69,7 +69,7 @@ onUnmounted(() => {
 
 <template>
   <Card
-    :class="`${isSelected ? 'border border-teal-600' : ''}`"
+    :class="`${isSelected ? 'border border-teal-600' : 'dark:border dark:border-surface-800'}`"
     :pt:body:class="`${isSelected ? '' : '!py-1'} !gap-1`"
     pt:content:class="empty:hidden"
   >

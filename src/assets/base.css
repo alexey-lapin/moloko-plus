@@ -32,5 +32,5 @@ body {
 }
 
 html.dark body {
-  background-color: var(--p-surface-900);
+  background-color: var(--p-surface-950);
 }
