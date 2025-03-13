@@ -100,7 +100,7 @@ onUnmounted(() => {
           <span v-if="comment" class="text-muted-color">{{ comment }}</span>
         </div>
         <span v-if="isSelected" class="pi pi-times" @click="emits('click-close')"></span>
-        <span v-else class="cursor-pointer pi pi-pencil p-1" @click="emits('click-edit')"></span>
+        <span v-else class="cursor-pointer pi pi-pencil p-1 dark:text-surface-500" @click="emits('click-edit')"></span>
       </div>
       <div v-if="isSelected">
         <EventEditor :event="event" @event-updated="emits('event-updated', $event)" />
