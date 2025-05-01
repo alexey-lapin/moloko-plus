@@ -64,12 +64,25 @@ function getPreviousEvent(dayIndex: number, eventIndex: number) {
   return eventsByDate.value[dayIndex][1][eventIndex - 1]
 }
 
-function startEvent(type: string) {
+async function startEvent(type: string) {
+  const { data } = await supabase
+    .from('events')
+    .select('properties')
+    .limit(1)
+    .order('id', { ascending: false })
+  const prevTags: string[] = data?.[0]?.properties?.brest ?? []
+  const tags: string[] = []
+  if (prevTags.includes('Left')) {
+    tags.push('Right')
+  } else if (prevTags.includes('Right')) {
+    tags.push('Left')
+  }
   supabase
     .from('events')
     .insert({
       name: type,
       started_at: new Date().toISOString(),
+      properties: tags.length > 0 ? { brest: tags } : null,
     })
     .then(() => {
       return getEvents()
