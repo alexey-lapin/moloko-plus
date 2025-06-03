@@ -2,8 +2,10 @@
 import { onMounted } from 'vue'
 import { supabase } from '@/supabase.ts'
 
+import { ProgressSpinner } from 'primevue'
+
 import { useSessionStore } from '@/stores/session.ts'
-import Auth from '@/components/TheAuth.vue'
+import TheAuth from '@/components/TheAuth.vue'
 
 const sessionStore = useSessionStore()
 
@@ -15,7 +17,10 @@ onMounted(() => {
 </script>
 
 <template>
-  <Auth v-if="!sessionStore.session" />
+  <div v-if="sessionStore.isLoading()" class="flex justify-center items-center h-screen">
+    <ProgressSpinner />
+  </div>
+  <TheAuth v-else-if="!sessionStore.session" />
   <RouterView v-else />
 </template>
 
