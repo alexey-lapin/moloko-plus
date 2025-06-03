@@ -25,6 +25,8 @@ const isCopiedMessageVisible: Ref<{ [key: number]: boolean }> = ref({})
 
 const timeSinceLastEvent: Ref<string | null> = ref(null)
 
+const creatingEvent: Ref<boolean> = ref(false)
+
 async function getEvents() {
   const { data } = await supabase
     .from('events')
@@ -65,34 +67,39 @@ function getPreviousEvent(dayIndex: number, eventIndex: number) {
 }
 
 async function startEvent(type: string) {
-  const { data } = await supabase
-    .from('events')
-    .select('properties')
-    .limit(1)
-    .order('id', { ascending: false })
-  const prevTags: string[] = data?.[0]?.properties?.brest ?? []
-  const tags: string[] = []
-  if (prevTags.includes('Left')) {
-    tags.push('Right')
-  } else if (prevTags.includes('Right')) {
-    tags.push('Left')
+  try {
+    creatingEvent.value = true
+    const { data } = await supabase
+      .from('events')
+      .select('properties')
+      .limit(1)
+      .order('id', { ascending: false })
+    const prevTags: string[] = data?.[0]?.properties?.brest ?? []
+    const tags: string[] = []
+    if (prevTags.includes('Left')) {
+      tags.push('Right')
+    } else if (prevTags.includes('Right')) {
+      tags.push('Left')
+    }
+    await supabase
+      .from('events')
+      .insert({
+        name: type,
+        started_at: new Date().toISOString(),
+        properties: tags.length > 0 ? { brest: tags } : null,
+      })
+      .then(() => {
+        return getEvents()
+      })
+      .then(() => {
+        scrollToBottom()
+      })
+      .then(() => {
+        sendMessageToBot({ event: lastEvent.value, start: true })
+      })
+  } finally {
+    creatingEvent .value = false
   }
-  supabase
-    .from('events')
-    .insert({
-      name: type,
-      started_at: new Date().toISOString(),
-      properties: tags.length > 0 ? { brest: tags } : null,
-    })
-    .then(() => {
-      return getEvents()
-    })
-    .then(() => {
-      scrollToBottom()
-    })
-    .then(() => {
-      sendMessageToBot({ event: lastEvent.value, start: true })
-    })
 }
 
 function onEditorUpdate(dayIndex: number, eventIndex: number, unselect: boolean) {
@@ -232,8 +239,9 @@ onUnmounted(() => {
     <Button icon="pi pi-refresh" severity="secondary" @click="getEvents()" />
     <Button
       label="Brestfeeding"
-      @click="startEvent('brestfeeding')"
       :severity="selectedId ? 'secondary' : 'primary'"
+      :loading="creatingEvent"
+      @click="startEvent('brestfeeding')"
     />
   </div>
   <div id="bottom"></div>
