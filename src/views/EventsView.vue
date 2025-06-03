@@ -26,33 +26,39 @@ const isCopiedMessageVisible: Ref<{ [key: number]: boolean }> = ref({})
 const timeSinceLastEvent: Ref<string | null> = ref(null)
 
 const creatingEvent: Ref<boolean> = ref(false)
+const refreshingEvents: Ref<boolean> = ref(false)
 
 async function getEvents() {
-  const { data } = await supabase
-    .from('events')
-    .select()
-    .gte('started_at', dayjs().subtract(7, 'd').startOf('day').utc().toISOString())
-    .order('id', { ascending: true })
+  refreshingEvents.value = true
+  try {
+    const { data } = await supabase
+      .from('events')
+      .select()
+      .gte('started_at', dayjs().subtract(7, 'd').startOf('day').utc().toISOString())
+      .order('id', { ascending: true })
 
-  const allEvents = (data as Event[]) ?? []
-  lastEvent.value = allEvents[allEvents.length - 1]
+    const allEvents = (data as Event[]) ?? []
+    lastEvent.value = allEvents[allEvents.length - 1]
 
-  eventsByDate.value = allEvents.reduce(
-    (acc, event) => {
-      const date = dayjs(event.started_at).startOf('day')
-      const existing = acc.find(([d]) => d.unix() === date.unix())
-      if (existing) {
-        existing[1].push(event)
-      } else {
-        acc.push([date, [event]])
-      }
-      return acc
-    },
-    [] as [Dayjs, Event[]][],
-  )
+    eventsByDate.value = allEvents.reduce(
+      (acc, event) => {
+        const date = dayjs(event.started_at).startOf('day')
+        const existing = acc.find(([d]) => d.unix() === date.unix())
+        if (existing) {
+          existing[1].push(event)
+        } else {
+          acc.push([date, [event]])
+        }
+        return acc
+      },
+      [] as [Dayjs, Event[]][],
+    )
 
-  if (selectedId.value === null && lastEvent.value.ended_at === null) {
-    selectedId.value = lastEvent.value.id
+    if (selectedId.value === null && lastEvent.value.ended_at === null) {
+      selectedId.value = lastEvent.value.id
+    }
+  } finally {
+    refreshingEvents.value = false
   }
 }
 
@@ -98,7 +104,7 @@ async function startEvent(type: string) {
         sendMessageToBot({ event: lastEvent.value, start: true })
       })
   } finally {
-    creatingEvent .value = false
+    creatingEvent.value = false
   }
 }
 
@@ -236,7 +242,12 @@ onUnmounted(() => {
   </div>
   <p v-if="!selectedId" class="mt-2 ml-3">Since last event: {{ timeSinceLastEvent }}</p>
   <div class="mt-3 ml-3 mb-10 flex gap-4">
-    <Button icon="pi pi-refresh" severity="secondary" @click="getEvents()" />
+    <Button
+      icon="pi pi-refresh"
+      severity="secondary"
+      :loading="refreshingEvents"
+      @click="getEvents()"
+    />
     <Button
       label="Brestfeeding"
       :severity="selectedId ? 'secondary' : 'primary'"
