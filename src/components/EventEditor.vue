@@ -35,7 +35,6 @@ const tagOptions = ref([
     class: 'd3',
   },
 ])
-// const tagOptions = ref(['Left', 'Right', 'D3'])
 
 const addMinutes = (minutes: number) => {
   return dayjs().add(minutes, 'minute').toDate()

@@ -1,19 +1,54 @@
 <!DOCTYPE html>
 <html lang="">
-  <head>
-    <meta charset="UTF-8">
-    <link rel="shortcut icon"
-          href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍼</text></svg>">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="manifest" href="/manifest.json">
-    <link rel="apple-touch-icon" sizes="180x180" href="/icon-180x180.png">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Moloko+">
-    <title>Moloko+</title>
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.ts"></script>
-  </body>
+<head>
+  <meta charset="UTF-8">
+  <link rel="shortcut icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍼</text></svg>">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icon-180x180.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Moloko+">
+  <title>Moloko+</title>
+  <script>
+    (function() {
+      const KEY = 'vueuse-color-scheme'
+      const saved = localStorage.getItem(KEY) || 'auto'
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+      const isDark = saved === 'dark' || (saved === 'auto' && prefersDark)
+
+      const el = document.documentElement
+      if (isDark) {
+        el.classList.add('dark')
+      } else {
+        el.classList.remove('dark')
+      }
+
+      try {
+        const mql = window.matchMedia('(prefers-color-scheme: dark)')
+        mql.addEventListener('change', function(e) {
+          const current = localStorage.getItem(KEY) || 'auto'
+          if (current === 'auto') {
+            if (e.matches) {
+              el.classList.add('dark')
+            } else {
+              el.classList.remove('dark')
+            }
+          }
+        })
+      } catch (_) {
+      }
+
+      const meta = document.createElement('meta')
+      meta.name = 'color-scheme'
+      meta.content = isDark ? 'dark light' : 'light dark'
+      document.head.appendChild(meta)
+    })()
+  </script>
+</head>
+<body>
+<div id="app"></div>
+<script type="module" src="/src/main.ts"></script>
+</body>
 </html>
