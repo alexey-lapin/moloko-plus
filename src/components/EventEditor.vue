@@ -200,7 +200,7 @@ watch(
     color: var(--p-sky-700);
   }
 
-  :deep(.p-togglebutton-checked .p-togglebutton-content:has(.d3)) {
+  .p-togglebutton-checked .p-togglebutton-content:has(.d3) {
     background-color: var(--p-orange-100);
     color: var(--p-orange-700);
   }
