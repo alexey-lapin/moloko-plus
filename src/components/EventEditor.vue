@@ -133,7 +133,7 @@ watch(
         </div>
         <Slider
           v-model="startedAtMinutes"
-          :min="Math.max(0, originalStartedAt - 60 * 5)"
+          :min="Math.max(0, originalStartedAt - 60 * 3)"
           :max="originalStartedAt"
           class="sm:w-56 w-full"
         />
@@ -210,7 +210,7 @@ watch(
         </div>
         <Slider
           v-model="endedAtMinutes"
-          :min="Math.max(0, originalEndedAt - 60 * 5)"
+          :min="Math.max(0, originalEndedAt - 60 * 3)"
           :max="originalEndedAt"
           class="sm:w-56 w-full"
         />
