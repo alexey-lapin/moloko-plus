@@ -1,15 +1,16 @@
 <script setup lang="ts">
+import { onMounted, onUnmounted, ref, type Ref } from 'vue'
+import dayjs, { Dayjs } from 'dayjs'
+import duration from 'dayjs/plugin/duration'
+import utc from 'dayjs/plugin/utc'
+
 import Button from 'primevue/button'
 import Message from 'primevue/message'
 
 import TheNav from '@/components/TheNav.vue'
 import TheEvent from '@/components/TheEvent.vue'
-import { onMounted, onUnmounted, ref, type Ref } from 'vue'
-import { supabase } from '@/supabase.ts'
 
-import dayjs, { Dayjs } from 'dayjs'
-import duration from 'dayjs/plugin/duration'
-import utc from 'dayjs/plugin/utc'
+import { supabase } from '@/supabase.ts'
 
 import type Event from '@/model/Event.ts'
 
@@ -206,14 +207,20 @@ onUnmounted(() => {
   <TheNav />
 
   <div class="flex flex-col gap-6 mt-2">
-    <div v-for="(day, dayIndex) in eventsByDate" :key="day[0].unix()">
+    <div
+      v-for="(day, dayIndex) in eventsByDate"
+      :key="day[0].unix()"
+    >
       <div>
         <div class="flex items-center gap-2 min-h-7">
           <h1 class="ml-3 font-bold">
             {{ day[0].format('MMMM DD') }} -
             {{ age(dayjs(day[1][day[1].length - 1].started_at)) }} ({{ day[1].length }})
           </h1>
-          <span class="cursor-pointer pi pi-copy" @click="copyEvents(dayIndex)"></span>
+          <span
+            class="cursor-pointer pi pi-copy"
+            @click="copyEvents(dayIndex)"
+          ></span>
           <Message
             v-if="isCopiedMessageVisible[dayIndex]"
             severity="success"
@@ -240,7 +247,14 @@ onUnmounted(() => {
       </div>
     </div>
   </div>
-  <p v-if="!selectedId" class="mt-2 ml-3">Since last event: {{ timeSinceLastEvent }}</p>
+
+  <p
+    v-if="!selectedId"
+    class="mt-2 ml-3"
+  >
+    Since last event: {{ timeSinceLastEvent }}
+  </p>
+
   <div class="mt-3 ml-3 mb-10 flex gap-4">
     <Button
       icon="pi pi-refresh"
@@ -255,5 +269,6 @@ onUnmounted(() => {
       @click="startEvent('brestfeeding')"
     />
   </div>
+
   <div id="bottom"></div>
 </template>

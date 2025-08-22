@@ -17,11 +17,12 @@ onMounted(() => {
 </script>
 
 <template>
-  <div v-if="sessionStore.isLoading()" class="flex justify-center items-center h-screen">
+  <div
+    v-if="sessionStore.isLoading()"
+    class="flex justify-center items-center h-screen"
+  >
     <ProgressSpinner />
   </div>
   <TheAuth v-else-if="!sessionStore.session" />
   <RouterView v-else />
 </template>
-
-<style scoped></style>

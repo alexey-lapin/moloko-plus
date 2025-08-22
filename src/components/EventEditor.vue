@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref, type Ref, toRef, watch } from 'vue'
+import { computed, ref, type Ref, toRef, watch } from 'vue'
 import dayjs from 'dayjs'
 
 import Button from 'primevue/button'
 import DatePicker from 'primevue/datepicker'
 import SelectButton from 'primevue/selectbutton'
+import Slider from 'primevue/slider'
 
 import InputText from 'primevue/inputtext'
 import type Event from '@/model/Event.ts'
@@ -71,6 +72,23 @@ const updateEvent = (unselect: boolean, properties: Record<string, unknown>) => 
     })
 }
 
+const originalStartedAt = dayjs(startedAt.value).hour() * 60 + dayjs(startedAt.value).minute()
+const originalEndedAt = dayjs(endedAt.value).hour() * 60 + dayjs(endedAt.value).minute()
+
+const startedAtMinutes = computed({
+  get: () => dayjs(startedAt.value).hour() * 60 + dayjs(startedAt.value).minute(),
+  set: (val: number) => {
+    startedAt.value = dayjs().startOf('day').add(val, 'minute').toDate()
+  },
+})
+
+const endedAtMinutes = computed({
+  get: () => dayjs(endedAt.value).hour() * 60 + dayjs(endedAt.value).minute(),
+  set: (val: number) => {
+    endedAt.value = dayjs().startOf('day').add(val, 'minute').toDate()
+  },
+})
+
 watch(
   () => event.value,
   (newValue, oldValue) => {
@@ -88,33 +106,57 @@ watch(
 </script>
 
 <template>
-  <!--  <p class="text-lg"># {{ event.id }} {{ event.name }}</p>-->
   <div class="molokoplus-event-editor">
     <div class="mt-0">
       <p>Start:</p>
-      <div class="flex flex-wrap gap-2">
-        <DatePicker
-          v-if="isStartedAtEditable"
-          class="w-20"
-          v-model="startedAt"
-          timeOnly
-          @keydown.enter="updateStartedAt(startedAt)"
-        />
-        <Button v-if="isStartedAtEditable" label="OK" @click="updateStartedAt(startedAt)" />
-        <template v-for="n in Array.from({ length: 5 }, (_, i) => -5 + i)" :key="n">
+      <div
+        v-if="isStartedAtEditable"
+        class="flex flex-col gap-5"
+      >
+        <div class="flex flex-wrap gap-2">
+          <DatePicker
+            class="w-25"
+            v-model="startedAt"
+            time-only
+            hour-format="12"
+            @keydown.enter="updateStartedAt(startedAt)"
+          />
           <Button
-            v-if="!isStartedAtEditable"
+            label="OK"
+            @click="updateStartedAt(startedAt)"
+          />
+          <Button
+            icon="pi pi-arrow-left"
+            severity="secondary"
+            @click="isStartedAtEditable = false"
+          />
+        </div>
+        <Slider
+          v-model="startedAtMinutes"
+          :min="Math.max(0, originalStartedAt - 60 * 5)"
+          :max="originalStartedAt"
+          class="sm:w-56 w-full"
+        />
+      </div>
+      <div
+        v-else
+        class="flex flex-wrap gap-2"
+      >
+        <template
+          v-for="n in [-10, -7, -5, -3, -1, 0]"
+          :key="n"
+        >
+          <Button
             :label="'' + n"
             severity="secondary"
             @click="updateStartedAt(addMinutes(n))"
-          ></Button>
+          />
         </template>
         <Button
-          v-if="!isStartedAtEditable"
-          @click="isStartedAtEditable = true"
           icon="pi pi-pencil"
           severity="secondary"
-        ></Button>
+          @click="isStartedAtEditable = true"
+        />
       </div>
     </div>
 
@@ -144,30 +186,59 @@ watch(
 
     <div class="mt-2">
       <p>End:</p>
-      <div class="flex flex-wrap gap-2">
-        <DatePicker
-          v-if="isEndedAtEditable"
-          class="w-20"
-          v-model="endedAt"
-          timeOnly
-          @keydown.enter="updateEndedAt(endedAt)"
-        />
-        <Button v-if="isEndedAtEditable" label="OK" @click="updateEndedAt(endedAt)" />
-        <template v-for="n in Array.from({ length: 5 }, (_, i) => -5 + i)" :key="n">
+      <div
+        v-if="isEndedAtEditable"
+        class="flex flex-col gap-5"
+      >
+        <div class="flex flex-wrap gap-2">
+          <DatePicker
+            class="w-25"
+            v-model="endedAt"
+            time-only
+            hour-format="12"
+            @keydown.enter="updateEndedAt(endedAt)"
+          />
           <Button
-            v-if="!isEndedAtEditable"
+            label="OK"
+            @click="updateEndedAt(endedAt)"
+          />
+          <Button
+            icon="pi pi-arrow-left"
+            severity="secondary"
+            @click="isEndedAtEditable = false"
+          />
+        </div>
+        <Slider
+          v-model="endedAtMinutes"
+          :min="Math.max(0, originalEndedAt - 60 * 5)"
+          :max="originalEndedAt"
+          class="sm:w-56 w-full"
+        />
+      </div>
+
+      <div
+        v-else
+        class="flex flex-wrap gap-2"
+      >
+        <template
+          v-for="n in Array.from({ length: 5 }, (_, i) => -5 + i)"
+          :key="n"
+        >
+          <Button
             :label="'' + n"
             severity="secondary"
             @click="updateEndedAt(addMinutes(n))"
-          ></Button>
+          />
         </template>
-        <Button v-if="!isEndedAtEditable" label="Now" @click="updateEndedAt(addMinutes(0))" />
         <Button
-          v-if="!isEndedAtEditable"
-          @click="isEndedAtEditable = true"
+          label="Now"
+          @click="updateEndedAt(addMinutes(0))"
+        />
+        <Button
           icon="pi pi-pencil"
           severity="secondary"
-        ></Button>
+          @click="isEndedAtEditable = true"
+        />
       </div>
     </div>
 
