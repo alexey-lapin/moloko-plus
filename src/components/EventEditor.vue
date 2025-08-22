@@ -143,7 +143,7 @@ watch(
         class="flex flex-wrap gap-2"
       >
         <template
-          v-for="n in [-10, -7, -5, -3, -1, 0]"
+          v-for="n in [-10, -7, -5, -1, 0]"
           :key="n"
         >
           <Button
