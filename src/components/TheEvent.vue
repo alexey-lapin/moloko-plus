@@ -1,10 +1,13 @@
 <script setup lang="ts">
+import { onMounted, onUnmounted, ref, toRef } from 'vue'
+import dayjs from 'dayjs'
+
 import Card from 'primevue/card'
 import Tag from 'primevue/tag'
-import { onMounted, onUnmounted, ref, toRef } from 'vue'
-import type Event from '@/model/Event.ts'
-import dayjs from 'dayjs'
+
 import EventEditor from '@/components/EventEditor.vue'
+
+import type Event from '@/model/Event.ts'
 
 const props = defineProps<{
   index: number
@@ -82,7 +85,10 @@ onUnmounted(() => {
 
           <span :class="`${isSelected ? 'font-bold' : ''}`">{{ composeLine() }}</span>
 
-          <div v-if="tags.length > 0" class="flex gap-1">
+          <div
+            v-if="tags.length > 0"
+            class="flex gap-1"
+          >
             <Tag
               v-if="tags.includes('Left')"
               severity="success"
@@ -95,15 +101,34 @@ onUnmounted(() => {
               value="R"
               class="dark:bg-sky-200! dark:text-sky-700!"
             />
-            <Tag v-if="tags.includes('D3')" severity="warn" value="D3" />
+            <Tag
+              v-if="tags.includes('D3')"
+              severity="warn"
+              value="D3"
+            />
           </div>
-          <span v-if="comment" class="text-muted-color">{{ comment }}</span>
+          <span
+            v-if="comment"
+            class="text-muted-color"
+            >{{ comment }}</span
+          >
         </div>
-        <span v-if="isSelected" class="pi pi-times" @click="emits('click-close')"></span>
-        <span v-else class="cursor-pointer pi pi-pencil p-1 dark:text-surface-500" @click="emits('click-edit')"></span>
+        <span
+          v-if="isSelected"
+          class="pi pi-times"
+          @click="emits('click-close')"
+        ></span>
+        <span
+          v-else
+          class="cursor-pointer pi pi-pencil p-1 dark:text-surface-500"
+          @click="emits('click-edit')"
+        ></span>
       </div>
       <div v-if="isSelected">
-        <EventEditor :event="event" @event-updated="emits('event-updated', $event)" />
+        <EventEditor
+          :event="event"
+          @event-updated="emits('event-updated', $event)"
+        />
       </div>
     </template>
   </Card>
