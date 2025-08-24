@@ -242,7 +242,7 @@ onUnmounted(() => {
 
 <style scoped>
 .safe-area-content {
-  padding-top: calc(5rem + env(safe-area-inset-top));
+  padding-top: calc(4rem + env(safe-area-inset-top));
   padding-left: max(1rem, env(safe-area-inset-left));
   padding-right: max(1rem, env(safe-area-inset-right));
   padding-bottom: max(2.5rem, env(safe-area-inset-bottom));
