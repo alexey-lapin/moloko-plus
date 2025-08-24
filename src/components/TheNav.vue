@@ -3,10 +3,11 @@ import { computed, watchEffect } from 'vue'
 import { useColorMode, useCycleList } from '@vueuse/core'
 
 import Button from 'primevue/button'
-import type { MenuItem } from 'primevue/menuitem'
 import { Menubar } from 'primevue'
 
 import { useSessionStore } from '@/stores/session.ts'
+
+import type { MenuItem } from 'primevue/menuitem'
 
 const sessionStore = useSessionStore()
 
@@ -35,25 +36,45 @@ const items: MenuItem[] = []
 </script>
 
 <template>
-  <Menubar :model="items">
-    <template #start>
-      <h1 class="text-xl">🍼 Moloko+</h1>
-    </template>
+  <div class="fixed top-0 left-0 right-0 z-50 safe-area-navbar">
+    <Menubar
+      :model="items"
+      class="safe-area-content"
+    >
+      <template #start>
+        <h1 class="text-xl font-semibold">🍼 Moloko+</h1>
+      </template>
 
-    <template #end>
-      <div class="flex items-center gap-2">
-        <Button
-          :icon="modeIcon"
-          text
-          severity="secondary"
-          @click="next()"
-        />
-        <Button
-          label="Logout"
-          severity="secondary"
-          @click="sessionStore.logout()"
-        />
-      </div>
-    </template>
-  </Menubar>
+      <template #end>
+        <div class="flex items-center gap-2">
+          <Button
+            :icon="modeIcon"
+            text
+            severity="secondary"
+            size="small"
+            @click="next()"
+          />
+          <Button
+            label="Logout"
+            severity="secondary"
+            size="small"
+            @click="sessionStore.logout()"
+          />
+        </div>
+      </template>
+    </Menubar>
+  </div>
 </template>
+
+<style scoped>
+.safe-area-navbar {
+  padding-top: env(safe-area-inset-top);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+.safe-area-content {
+  padding-left: max(1rem, env(safe-area-inset-left));
+  padding-right: max(1rem, env(safe-area-inset-right));
+}
+</style>

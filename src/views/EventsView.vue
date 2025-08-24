@@ -179,59 +179,72 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <TheNav />
+  <div class="min-h-screen">
+    <TheNav />
 
-  <div class="flex flex-col gap-6 mt-2">
-    <div
-      v-for="(day, dayIndex) in eventsByDate"
-      :key="day[0].unix()"
-    >
-      <div>
-        <div class="flex items-center gap-2 min-h-7">
-          <h1 class="ml-3 font-bold">
-            {{ day[0].format('MMMM DD') }} -
-            {{ age(dayjs(day[1][day[1].length - 1].started_at)) }} ({{ day[1].length }})
-          </h1>
-        </div>
+    <div class="safe-area-content">
+      <div class="flex flex-col gap-6 mt-2">
+        <div
+          v-for="(day, dayIndex) in eventsByDate"
+          :key="day[0].unix()"
+        >
+          <div>
+            <div class="flex items-center gap-2 min-h-7">
+              <h1 class="ml-3 font-bold">
+                {{ day[0].format('MMMM DD') }} -
+                {{ age(dayjs(day[1][day[1].length - 1].started_at)) }} ({{ day[1].length }})
+              </h1>
+            </div>
 
-        <div class="flex flex-col gap-0.5">
-          <TheEvent
-            v-for="(event, eventIndex) in day[1]"
-            :key="event.id"
-            :index="eventIndex + 1"
-            :is-selected="selectedId === event.id"
-            :event="event"
-            :previous-event="getPreviousEvent(dayIndex, eventIndex)"
-            @click-edit="selectEvent(event.id)"
-            @click-close="unselectEvent()"
-            @event-updated="onEditorUpdate(dayIndex, eventIndex, $event)"
-          />
+            <div class="flex flex-col gap-0.5">
+              <TheEvent
+                v-for="(event, eventIndex) in day[1]"
+                :key="event.id"
+                :index="eventIndex + 1"
+                :is-selected="selectedId === event.id"
+                :event="event"
+                :previous-event="getPreviousEvent(dayIndex, eventIndex)"
+                @click-edit="selectEvent(event.id)"
+                @click-close="unselectEvent()"
+                @event-updated="onEditorUpdate(dayIndex, eventIndex, $event)"
+              />
+            </div>
+          </div>
         </div>
       </div>
+
+      <p
+        v-if="!selectedId"
+        class="mt-2 ml-3"
+      >
+        Since last event: {{ timeSinceLastEvent }}
+      </p>
+
+      <div class="mt-3 ml-3 mb-10 flex gap-4">
+        <Button
+          icon="pi pi-refresh"
+          severity="secondary"
+          :loading="refreshingEvents"
+          @click="getEvents()"
+        />
+        <Button
+          label="Breastfeeding"
+          :severity="selectedId ? 'secondary' : 'primary'"
+          :loading="creatingEvent"
+          @click="startEvent('brestfeeding')"
+        />
+      </div>
+
+      <div id="bottom"></div>
     </div>
   </div>
-
-  <p
-    v-if="!selectedId"
-    class="mt-2 ml-3"
-  >
-    Since last event: {{ timeSinceLastEvent }}
-  </p>
-
-  <div class="mt-3 ml-3 mb-10 flex gap-4">
-    <Button
-      icon="pi pi-refresh"
-      severity="secondary"
-      :loading="refreshingEvents"
-      @click="getEvents()"
-    />
-    <Button
-      label="Breastfeeding"
-      :severity="selectedId ? 'secondary' : 'primary'"
-      :loading="creatingEvent"
-      @click="startEvent('brestfeeding')"
-    />
-  </div>
-
-  <div id="bottom"></div>
 </template>
+
+<style scoped>
+.safe-area-content {
+  padding-top: calc(5rem + env(safe-area-inset-top));
+  padding-left: max(1rem, env(safe-area-inset-left));
+  padding-right: max(1rem, env(safe-area-inset-right));
+  padding-bottom: max(2.5rem, env(safe-area-inset-bottom));
+}
+</style>
